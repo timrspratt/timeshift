@@ -1,0 +1,31 @@
+{
+    "name": "timrspratt/timeshift",
+    "description": "Adjust the timestamp of your Aero store to preview content.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tim Spratt",
+            "email": "tim@aerocommerce.com"
+        }
+    ],
+    "require": {
+        "php": "^7.2",
+        "aerocommerce/admin": "^0",
+        "aerocommerce/core": "^0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Timrspratt\\Timeshift\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Timrspratt\\Timeshift\\ServiceProvider"
+            ]
+        }
+    }
+}
