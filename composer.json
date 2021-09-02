@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": "^7.2|^8.0",
-        "aerocommerce/admin": "^0",
+        "aerocommerce/admin": "^0|^1.0",
         "aerocommerce/core": "^0"
     },
     "autoload": {
