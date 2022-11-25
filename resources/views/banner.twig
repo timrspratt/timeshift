@@ -1,90 +1,49 @@
 {% css %}
 <style>
     #timeshift-banner {
-        position: fixed;
-        display: flex;
-        height: 48px;
-        color: white;
-        justify-content: space-between;
-        top: 0;
-        left: 0;
-        z-index: 1000000;
+        position: fixed; display: flex; height: 48px; color: white; top: 0; left: 0; z-index: 1000000; opacity: 0.85;
     }
-
     .timeshift-banner-icon-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 48px;
-        background-color: #CD4354;
-        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; width: 48px; min-width: 48px; background-color: #CD4354; cursor: pointer;
     }
-
     .timeshift-banner-icon {
-        width: 32px;
-        height: 32px;
+        width: 32px; height: 32px;
     }
-
     #timeshift-banner-text-container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        padding-left: 8px;
-        background-color: #E44B5E;
-        justify-content: center;
-        font-size: 14px;
-        line-height: 20px;
+        display: none; flex-direction: column; width: 100%; padding-left: 8px; background-color: #E44B5E; justify-content: center; font-size: 14px; line-height: 20px;
     }
-
-    .timeshift-time {
+    #timeshift-time {
         font-weight: bold;
     }
-
     .timeshift-banner-links-container {
-        display: flex;
-        align-items: center;
+        display: flex; align-items: center;
     }
-
     .timeshift-clickable {
         color: white;
     }
-
     .timeshift-clickable:hover {
         text-decoration: underline;
     }
-
     #timeshift-remove-form {
-        font-size: 12px;
-        line-height: 16px;
-        cursor: pointer;
+        font-size: 12px; line-height: 16px; cursor: pointer;
     }
-
     .timeshift-links-seperator {
         margin: 0 4px;
     }
-
     #timeshift-share-link, #timeshift-share-link-copied-text {
-        font-size: 12px;
-        line-height: 16px;
+        font-size: 12px; line-height: 16px;
     }
-
     #timeshift-share-link {
         cursor: pointer;
     }
-
     #timeshift-share-link-copied-text {
         display: none;
     }
-
     #timeshift-banner-close-icon-container {
-        background-color: #E44B5E;
+        display: none; background-color: #E44B5E;
     }
-
     .timeshift-banner-close-icon {
-        width: 20px;
-        height: 20px;
-        padding: 4px 4px 0 0;
-        cursor: pointer;
+        width: 20px; height: 20px; padding: 4px 4px 0 0; cursor: pointer;
     }
 </style>
 {% endcss %}
@@ -97,7 +56,7 @@
     </div>
 
     <div id="timeshift-banner-text-container">
-        <div>Your store's time is currently set to: <span class="timeshift-time">{{ time }}</span></div>
+        <div>Your store's time is currently set to: <span id="timeshift-time"></span></div>
         <div class="timeshift-banner-links-container">
             <form id="timeshift-remove-form" action="{{ route('timeshift.remove') }}" method="post">
                 {{ csrf_field() }}
@@ -123,6 +82,8 @@
     let bannerTextContainer = document.getElementById('timeshift-banner-text-container');
     let bannerCloseIconContainer = document.getElementById('timeshift-banner-close-icon-container');
 
+    let timeshiftTime = document.getElementById('timeshift-time');
+
     let shareLink = document.getElementById('timeshift-share-link');
     let shareLinkCopiedText = document.getElementById('timeshift-share-link-copied-text');
 
@@ -134,6 +95,33 @@
         openBanner();
     } else {
         closeBanner();
+    }
+
+    setTimeshiftTimeText()
+
+    let secondsElapsedSincePageLoad = 0;
+
+    setInterval(function () {
+        secondsElapsedSincePageLoad = secondsElapsedSincePageLoad + 1;
+
+        setTimeshiftTimeText(secondsElapsedSincePageLoad);
+    }, 1000)
+
+    function setTimeshiftTimeText(secondsElapsed = 0) {
+        timeshiftTime.innerText = formatDate((new Date('{{ time }}')).getTime() + secondsElapsed * 1000);
+    }
+
+    function formatDate(date) {
+        return (new Date(date)).toLocaleString('en-us', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true,
+        });
     }
 
     function copy(text) {
