@@ -15,7 +15,7 @@ class TimeshiftController extends Controller
 
         $stamp = null;
 
-        if ($shift !== null && is_numeric($shift)) {
+        if (is_numeric($shift)) {
             $stamp = Time::getShiftedNow((int) $shift);
         }
 
@@ -31,7 +31,7 @@ class TimeshiftController extends Controller
         if ($data['timestamp']) {
             $now = Time::now();
             $shift = Carbon::parse($data['timestamp']);
-            $seconds = $now->diffInSeconds($shift);
+            $seconds = $now->diffInRealSeconds($shift);
 
             if ($now->isAfter($shift)) {
                 $seconds *= -1;
@@ -47,5 +47,19 @@ class TimeshiftController extends Controller
             ->with([
                 'message' => 'Date and time have been set',
             ]);
+    }
+
+    public function generateURL(Request $request, $shift)
+    {
+        if (! $request->hasValidSignature()) {
+            abort(401);
+        }
+
+        return redirect(route('home'))->withCookie(cookie()->make('timeshift', $shift, 120, '/'));
+    }
+
+    public function remove()
+    {
+        return back()->withCookie(cookie()->forget('timeshift'));
     }
 }

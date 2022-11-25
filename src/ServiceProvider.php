@@ -22,10 +22,12 @@ class ServiceProvider extends ModuleServiceProvider
     {
         $this->app->bind(BaseTimeMachine::class, TimeMachine::class);
 
+        Router::addStoreRoutes(__DIR__.'/../routes/web.php');
+
         AdminModule::create('timeshift')
             ->title('Timeshift')
             ->summary('Preview your store at a different date and time')
-            ->routes(dirname(__DIR__).'/routes.php')
+            ->routes(dirname(__DIR__).'/routes/admin.php')
             ->route('admin.modules.timeshift.index');
     }
 }
