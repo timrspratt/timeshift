@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use Timrspratt\Timeshift\Http\Controllers\TimeshiftController;
 
 Route::get('timeshift', [TimeshiftController::class, 'index'])->name('admin.modules.timeshift.index');

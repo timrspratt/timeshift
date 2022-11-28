@@ -1,0 +1,181 @@
+{% css %}
+<style>
+    #timeshift-banner {
+        position: fixed; display: flex; height: 48px; color: white; top: 0; left: 0; z-index: 1000000;
+    }
+    .timeshift-banner-icon-container {
+        display: flex; align-items: center; justify-content: center; width: 48px; min-width: 48px; background-color: rgba(205, 67, 84, 0.85); cursor: pointer;
+    }
+    .timeshift-banner-icon {
+        width: 32px; height: 32px;
+    }
+    #timeshift-banner-text-container {
+        display: none; flex-direction: column; width: 100%; padding-left: 8px; background-color: rgba(228, 75, 94, 0.85); justify-content: center; font-size: 14px; line-height: 20px;
+    }
+    #timeshift-time {
+        font-weight: bold;
+    }
+    .timeshift-banner-links-container {
+        display: flex; align-items: center;
+    }
+    .timeshift-clickable {
+        color: white;
+    }
+    .timeshift-clickable:hover {
+        text-decoration: underline;
+    }
+    #timeshift-remove-form {
+        font-size: 12px; line-height: 16px; cursor: pointer;
+    }
+    .timeshift-links-seperator {
+        margin: 0 4px;
+    }
+    #timeshift-share-link, #timeshift-share-link-copied-text {
+        font-size: 12px; line-height: 16px;
+    }
+    #timeshift-share-link {
+        cursor: pointer;
+    }
+    #timeshift-share-link-copied-text {
+        display: none;
+    }
+    #timeshift-banner-close-icon-container {
+        display: none; background-color: rgba(228, 75, 94, 0.85);
+    }
+    .timeshift-banner-close-icon {
+        width: 20px; height: 20px; padding: 4px 4px 0 0; cursor: pointer;
+    }
+</style>
+{% endcss %}
+
+<div id="timeshift-banner" style="width: 100%;">
+    <div class="timeshift-banner-icon-container" onclick="toggleBanner()">
+        <svg class="timeshift-banner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    </div>
+
+    <div id="timeshift-banner-text-container">
+        <div>Your store's time is currently set to: <span id="timeshift-time"></span></div>
+        <div class="timeshift-banner-links-container">
+            <form id="timeshift-remove-form" action="{{ route('timeshift.remove') }}" method="post">
+                {{ csrf_field() }}
+
+                <button class="timeshift-clickable" type="submit">Remove</button>
+            </form>
+            <div class="timeshift-links-seperator">|</div>
+            <div id="timeshift-share-link" class="timeshift-clickable" onclick="copy('{{ link }}')">Copy share link to clipboard</div>
+            <div id="timeshift-share-link-copied-text">Copied</div>
+        </div>
+    </div>
+
+    <div id="timeshift-banner-close-icon-container">
+        <svg class="timeshift-banner-close-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="toggleBanner()">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </div>
+</div>
+
+{% js %}
+<script>
+    let banner = document.getElementById('timeshift-banner');
+    let bannerTextContainer = document.getElementById('timeshift-banner-text-container');
+    let bannerCloseIconContainer = document.getElementById('timeshift-banner-close-icon-container');
+
+    let timeshiftTime = document.getElementById('timeshift-time');
+
+    let shareLink = document.getElementById('timeshift-share-link');
+    let shareLinkCopiedText = document.getElementById('timeshift-share-link-copied-text');
+
+    if(! localStorage.getItem('timeshift-banner-open')) {
+        localStorage.setItem('timeshift-banner-open', 'true');
+    }
+
+    if (localStorage.getItem('timeshift-banner-open') === 'true') {
+        openBanner();
+    } else {
+        closeBanner();
+    }
+
+    setTimeshiftTimeText()
+
+    let secondsElapsedSincePageLoad = 0;
+
+    setInterval(function () {
+        secondsElapsedSincePageLoad = secondsElapsedSincePageLoad + 1;
+
+        setTimeshiftTimeText(secondsElapsedSincePageLoad);
+    }, 1000)
+
+    function setTimeshiftTimeText(secondsElapsed = 0) {
+        timeshiftTime.innerText = formatDate((new Date('{{ time }}')).getTime() + secondsElapsed * 1000);
+    }
+
+    function formatDate(date) {
+        return (new Date(date)).toLocaleString('en-us', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true,
+        });
+    }
+
+    function copy(text) {
+        const container = document.createElement('textarea');
+        container.value = text;
+        container.setAttribute('readonly', '');
+        container.style.cssText = 'position:fixed;pointer-events:none;z-index:-9999;opacity:0;';
+        document.body.appendChild(container);
+        if (navigator.userAgent && navigator.userAgent.match(/ipad|ipod|iphone/i)) {
+            container.contentEditable = 'true';
+            container.readOnly = true;
+            const range = document.createRange();
+            range.selectNodeContents(container);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            container.setSelectionRange(0, 999999);
+        } else {
+            container.select();
+        }
+        document.execCommand('copy');
+        document.body.removeChild(container);
+
+        shareLink.style.display = 'none';
+        shareLinkCopiedText.style.display = 'inline-block';
+
+        setTimeout(function () {
+            shareLinkCopiedText.style.display = 'none';
+            shareLink.style.display = 'inline-block';
+        }, 1000)
+    }
+
+    function openBanner() {
+        bannerTextContainer.style.display = 'flex';
+        bannerCloseIconContainer.style.display = 'flex';
+        banner.style.width = '100%';
+    }
+
+    function closeBanner() {
+        bannerTextContainer.style.display = 'none';
+        bannerCloseIconContainer.style.display ='none';
+        banner.style.width = 'auto';
+    }
+
+    function toggleBanner() {
+        let open = localStorage.getItem('timeshift-banner-open') === 'true';
+
+        if (open) {
+            closeBanner()
+        } else {
+            openBanner()
+        }
+
+        localStorage.setItem('timeshift-banner-open', open ? 'false' : 'true');
+    }
+</script>
+{% endjs %}
